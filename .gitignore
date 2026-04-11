@@ -1,0 +1,13 @@
+__pycache__/
+.pytest_cache/
+.venv/
+
+work/
+compiled/
+render/
+evidence/
+
+*.pyc
+*.log
+*.tmp
+*.patch
