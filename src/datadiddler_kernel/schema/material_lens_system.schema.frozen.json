@@ -1,0 +1,1101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/material-lens-system.schema.json",
+  "title": "Material Lens System Schema",
+  "description": "Concrete JSON Schema for core records used by the Material Lens / Data Diddler pipeline (Rake, Separator, Tagger, Weaver, Packager).",
+  "type": "object",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/DocumentRecord"
+    },
+    {
+      "$ref": "#/$defs/ExtractionReport"
+    },
+    {
+      "$ref": "#/$defs/TextArtifact"
+    },
+    {
+      "$ref": "#/$defs/MediaArtifact"
+    },
+    {
+      "$ref": "#/$defs/TriageResult"
+    },
+    {
+      "$ref": "#/$defs/Anchor"
+    },
+    {
+      "$ref": "#/$defs/Entity"
+    },
+    {
+      "$ref": "#/$defs/Event"
+    },
+    {
+      "$ref": "#/$defs/Claim"
+    },
+    {
+      "$ref": "#/$defs/Edge"
+    },
+    {
+      "$ref": "#/$defs/Thread"
+    },
+    {
+      "$ref": "#/$defs/ThreadSignature"
+    },
+    {
+      "$ref": "#/$defs/BasketSummary"
+    },
+    {
+      "$ref": "#/$defs/GroundedDatasetBlock"
+    }
+  ],
+  "$defs": {
+    "UUID": {
+      "type": "string",
+      "format": "uuid",
+      "description": "RFC 4122 UUID."
+    },
+    "ISO8601DateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "SHA256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$",
+      "description": "Hex-encoded SHA-256 digest."
+    },
+    "Confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Tag": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_\\-\\.]+$"
+    },
+    "AnchorLocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "line_start": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "line_end": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "char_start": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "char_end": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "timestamp_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "required": [
+        "page",
+        "line_start",
+        "line_end",
+        "char_start",
+        "char_end",
+        "timestamp_ms"
+      ]
+    },
+    "Anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "artifact_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "locator": {
+          "$ref": "#/$defs/AnchorLocator"
+        },
+        "excerpt": {
+          "type": "string",
+          "maxLength": 4000,
+          "description": "Short excerpt for human legibility. Keep small; avoid sensitive content in exports if policy requires."
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "doc_id",
+        "artifact_id",
+        "locator",
+        "excerpt",
+        "confidence"
+      ]
+    },
+    "ContainerRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "zip_parent_doc_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "path_in_container": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "zip_parent_doc_id",
+        "path_in_container"
+      ]
+    },
+    "DocumentRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "filename": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "mime_type": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "modified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "content_hash": {
+          "$ref": "#/$defs/SHA256"
+        },
+        "container": {
+          "$ref": "#/$defs/ContainerRef"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "doc_id",
+        "filename",
+        "mime_type",
+        "size_bytes",
+        "created_at",
+        "modified_at",
+        "content_hash",
+        "container",
+        "version"
+      ]
+    },
+    "ExtractionReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "ocr_used": {
+          "type": "boolean"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "doc_id",
+        "ocr_used",
+        "warnings",
+        "errors",
+        "confidence"
+      ]
+    },
+    "TextArtifactStructure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pages": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "lines_indexed": {
+          "type": "boolean"
+        },
+        "encoding": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "pages",
+        "lines_indexed",
+        "encoding"
+      ]
+    },
+    "TextArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "doc_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "table",
+            "email_body",
+            "transcript"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "structure": {
+          "$ref": "#/$defs/TextArtifactStructure"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Anchor"
+          },
+          "minItems": 1
+        },
+        "extract_confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "doc_id",
+        "kind",
+        "text",
+        "structure",
+        "anchors",
+        "extract_confidence"
+      ]
+    },
+    "MediaMetadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "height": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "duration_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "MediaArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "doc_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "kind": {
+          "enum": [
+            "image",
+            "attachment",
+            "audio",
+            "video"
+          ]
+        },
+        "uri": {
+          "$ref": "#/$defs/NonEmptyString",
+          "description": "Internal URI/pointer to stored media."
+        },
+        "metadata": {
+          "$ref": "#/$defs/MediaMetadata"
+        },
+        "extract_confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "doc_id",
+        "kind",
+        "uri",
+        "metadata",
+        "extract_confidence"
+      ]
+    },
+    "TriageLabel": {
+      "enum": [
+        "keep",
+        "defer",
+        "discard",
+        "duplicate",
+        "needs_review"
+      ]
+    },
+    "TriageAction": {
+      "enum": [
+        "send_to_tagger",
+        "manual_review",
+        "retry_ocr",
+        "noop"
+      ]
+    },
+    "TriageResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "label": {
+          "$ref": "#/$defs/TriageLabel"
+        },
+        "salience_score": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "routing_tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tag"
+          }
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "next_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TriageAction"
+          }
+        }
+      },
+      "required": [
+        "doc_id",
+        "label",
+        "salience_score",
+        "routing_tags",
+        "reasons",
+        "next_actions"
+      ]
+    },
+    "EntityType": {
+      "enum": [
+        "person",
+        "org",
+        "place",
+        "account",
+        "case",
+        "artifact",
+        "other"
+      ]
+    },
+    "Entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "type": {
+          "$ref": "#/$defs/EntityType"
+        },
+        "canonical_name": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Anchor"
+          },
+          "minItems": 1
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "entity_id",
+        "type",
+        "canonical_name",
+        "aliases",
+        "attributes",
+        "anchors",
+        "confidence"
+      ]
+    },
+    "EventType": {
+      "enum": [
+        "payment",
+        "meeting",
+        "travel",
+        "filing",
+        "publication",
+        "message",
+        "allegation",
+        "denial",
+        "threat",
+        "other"
+      ]
+    },
+    "TimeRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "end": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "Event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "type": {
+          "$ref": "#/$defs/EventType"
+        },
+        "time": {
+          "$ref": "#/$defs/TimeRange"
+        },
+        "participants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "summary": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Anchor"
+          },
+          "minItems": 1
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "event_id",
+        "type",
+        "time",
+        "participants",
+        "location",
+        "summary",
+        "anchors",
+        "confidence"
+      ]
+    },
+    "ClaimStance": {
+      "enum": [
+        "assert",
+        "deny",
+        "question",
+        "report"
+      ]
+    },
+    "EvidenceGrade": {
+      "enum": [
+        "rumor",
+        "innuendo",
+        "hearsay",
+        "first_person",
+        "documentary",
+        "corroborated",
+        "circumstantial"
+      ]
+    },
+    "Claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "statement": {
+          "$ref": "#/$defs/NonEmptyString",
+          "maxLength": 512
+        },
+        "asserted_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "stance": {
+          "$ref": "#/$defs/ClaimStance"
+        },
+        "about": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Entity/event IDs this claim references.",
+          "minItems": 0
+        },
+        "evidence_grade": {
+          "$ref": "#/$defs/EvidenceGrade"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Anchor"
+          },
+          "minItems": 1
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "claim_id",
+        "statement",
+        "asserted_by",
+        "stance",
+        "about",
+        "evidence_grade",
+        "anchors",
+        "confidence"
+      ]
+    },
+    "EdgeKind": {
+      "enum": [
+        "entity_entity",
+        "entity_event",
+        "claim_evidence",
+        "event_event"
+      ]
+    },
+    "Edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "edge_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "kind": {
+          "$ref": "#/$defs/EdgeKind"
+        },
+        "from_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "to_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "label": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "weight": {
+          "type": "number",
+          "minimum": -1.0,
+          "maximum": 1.0
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Anchor"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "edge_id",
+        "kind",
+        "from_id",
+        "to_id",
+        "label",
+        "weight",
+        "anchors"
+      ]
+    },
+    "StrengthProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_diversity": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "evidence_quality": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "consistency": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "corroboration": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "source_diversity",
+        "evidence_quality",
+        "consistency",
+        "corroboration"
+      ]
+    },
+    "Contradiction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "claim_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "minItems": 2
+        },
+        "note": {
+          "$ref": "#/$defs/NonEmptyString",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "claim_ids",
+        "note"
+      ]
+    },
+    "OpenLoop": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/NonEmptyString",
+          "maxLength": 512
+        },
+        "expected_evidence": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "question",
+        "expected_evidence"
+      ]
+    },
+    "ThreadMembers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        }
+      },
+      "required": [
+        "entities",
+        "events",
+        "claims"
+      ]
+    },
+    "Thread": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "thread_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "title": {
+          "$ref": "#/$defs/NonEmptyString"
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "region_tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tag"
+          }
+        },
+        "time_range": {
+          "$ref": "#/$defs/TimeRange"
+        },
+        "members": {
+          "$ref": "#/$defs/ThreadMembers"
+        },
+        "strength": {
+          "$ref": "#/$defs/StrengthProfile"
+        },
+        "contradictions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Contradiction"
+          }
+        },
+        "open_loops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OpenLoop"
+          }
+        }
+      },
+      "required": [
+        "thread_id",
+        "title",
+        "summary",
+        "region_tags",
+        "time_range",
+        "members",
+        "strength",
+        "contradictions",
+        "open_loops"
+      ]
+    },
+    "ThreadSignature": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "thread_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "entity_cooccurrence": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "time_envelope": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^\\d{4}-\\d{2}$"
+            },
+            "end": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^\\d{4}-\\d{2}$"
+            }
+          },
+          "required": [
+            "start",
+            "end"
+          ]
+        },
+        "tag_fingerprint": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tag"
+          }
+        },
+        "strength_profile": {
+          "$ref": "#/$defs/StrengthProfile"
+        },
+        "privacy_level": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      },
+      "required": [
+        "thread_id",
+        "entity_cooccurrence",
+        "time_envelope",
+        "tag_fingerprint",
+        "strength_profile",
+        "privacy_level"
+      ]
+    },
+    "BasketSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "basket_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "created_at": {
+          "$ref": "#/$defs/ISO8601DateTime"
+        },
+        "doc_ids_processed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "new_entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "new_threads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "deferred_docs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "needs_review_docs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "basket_id",
+        "created_at",
+        "doc_ids_processed",
+        "new_entities",
+        "new_threads",
+        "deferred_docs",
+        "needs_review_docs",
+        "notes"
+      ]
+    },
+    "GroundedDatasetBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "generated_at": {
+          "$ref": "#/$defs/ISO8601DateTime"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DocumentRecord"
+          }
+        },
+        "triage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TriageResult"
+          }
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Entity"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Event"
+          }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Claim"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Edge"
+          }
+        },
+        "threads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Thread"
+          }
+        },
+        "open_loops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OpenLoop"
+          }
+        },
+        "basket_summaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BasketSummary"
+          }
+        }
+      },
+      "required": [
+        "project_id",
+        "version",
+        "generated_at",
+        "documents",
+        "triage",
+        "entities",
+        "events",
+        "claims",
+        "edges",
+        "threads",
+        "open_loops",
+        "basket_summaries"
+      ]
+    }
+  },
+  "$comment": "Policy: Persisted artifacts must be machine-oriented only. No stylistic markers, glyphs, narrative language, or author-identifying phrases. Content must be technical, minimal, ASCII-safe, and schema-governed."
+}
