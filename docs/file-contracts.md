@@ -1,246 +1,128 @@
-\# File Contracts
 
 
+# File Contracts
 
-\## Summary
-
-
+## Summary
 
 The DataDiddler Kernel operates on strict file-based contracts between stages.
 
-
-
 Each stage reads specific files and produces specific files.
-
-
 
 These contracts define the structure of the pipeline.
 
+---
 
-
-\---
-
-
-
-\## Core Files
-
-
+## Core Files
 
 The following files form the core contract surface:
 
+* `documents.ndjson`
+* `text_artifacts.ndjson`
+* `triage.ndjson`
+* `entities.ndjson`
+* `events.ndjson`
+* `claims.ndjson`
+* `edges.ndjson`
+* `threads.ndjson` (compatibility placeholder)
 
+---
 
-\- `documents.ndjson`
+## Stage Interfaces
 
-\- `text\_artifacts.ndjson`
+### Rake → Separator
 
-\- `triage.ndjson`
+**Produces:**
 
-\- `entities.ndjson`
+* `documents.ndjson`
+* `text_artifacts.ndjson`
 
-\- `events.ndjson`
+---
 
-\- `claims.ndjson`
+### Separator → Tagger
 
-\- `edges.ndjson`
+**Produces:**
 
-\- `threads.ndjson` (compatibility placeholder)
+* `triage.ndjson`
 
+---
 
+### Tagger → Packager
 
-\---
+**Produces:**
 
+* `entities.ndjson`
+* `events.ndjson`
+* `claims.ndjson`
+* `edges.ndjson`
 
+---
 
-\## Stage Interfaces
-
-
-
-\### Rake → Separator
-
-
-
-\*\*Produces:\*\*
-
-
-
-\- `documents.ndjson`
-
-\- `text\_artifacts.ndjson`
-
-
-
-\---
-
-
-
-\### Separator → Tagger
-
-
-
-\*\*Produces:\*\*
-
-
-
-\- `triage.ndjson`
-
-
-
-\---
-
-
-
-\### Tagger → Packager
-
-
-
-\*\*Produces:\*\*
-
-
-
-\- `entities.ndjson`
-
-\- `events.ndjson`
-
-\- `claims.ndjson`
-
-\- `edges.ndjson`
-
-
-
-\---
-
-
-
-\### Packager Input
-
-
+### Packager Input
 
 Packager consumes:
 
+* `documents.ndjson`
+* `triage.ndjson`
+* `entities.ndjson`
+* `events.ndjson`
+* `claims.ndjson`
+* `edges.ndjson`
+* `threads.ndjson` (must exist, may be empty)
 
+---
 
-\- `documents.ndjson`
-
-\- `triage.ndjson`
-
-\- `entities.ndjson`
-
-\- `events.ndjson`
-
-\- `claims.ndjson`
-
-\- `edges.ndjson`
-
-\- `threads.ndjson` (must exist, may be empty)
-
-
-
-\---
-
-
-
-\## Final Output
-
-
+## Final Output
 
 The packager produces:
 
-
-
-\- `compiled/GroundedDatasetBlock.vN.json`
-
-
+* `compiled/GroundedDatasetBlock.vN.json`
 
 This output must conform to:
 
+* `material_lens_system.schema.frozen.json`
 
+---
 
-\- `material\_lens\_system.schema.frozen.json`
-
-
-
-\---
-
-
-
-\## Run Truth Files
-
-
+## Run Truth Files
 
 Each execution produces:
 
-
-
-\- `run\_manifest.json`
-
-\- `stage\_status.ndjson`
-
-
+* `run_manifest.json`
+* `stage_status.ndjson`
 
 These files are considered authoritative records of the run.
 
+---
 
-
-\---
-
-
-
-\## Schema Enforcement
-
-
+## Schema Enforcement
 
 The schema:
 
+* defines valid output structure
+* is enforced at packaging stage
+* acts as the final contract gate
 
+---
 
-\- defines valid output structure
-
-\- is enforced at packaging stage
-
-\- acts as the final contract gate
-
-
-
-\---
-
-
-
-\## Compatibility Note
-
-
+## Compatibility Note
 
 `threads.ndjson` is required by the current packager input shape.
 
-
-
 It is written as an empty file by the kernel.
-
-
 
 This does not imply the presence of a weaver stage.
 
+---
 
-
-\---
-
-
-
-\## Boundary Rules
-
-
+## Boundary Rules
 
 These file contracts are:
 
-
-
-\- fixed at the kernel level
-
-\- required for all compliant pipelines
-
-
+* fixed at the kernel level
+* required for all compliant pipelines
 
 Stage implementations (lenses) must conform to these contracts.
+
 
 
 
